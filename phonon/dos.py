@@ -111,24 +111,33 @@ def plot_total_dos(ax,
 def plot_partial_dos(ax,
                      frequency_points,
                      partial_dos,
+                     total_dos_bool=True,
                      indices=None,
+                     pdos_colors=None,
                      legend=None,
                      xlabel=None,
                      ylabel=None,
                      draw_grid=True,
                      flip_xy=False):
-    ax.xaxis.set_ticks_position('both')
-    ax.yaxis.set_ticks_position('both')
-    ax.xaxis.set_tick_params(which='both', direction='in')
-    ax.yaxis.set_tick_params(which='both', direction='in')
+    ax.tick_params(axis="both",direction="in", labelsize='x-large')
 
     plots = []
     num_pdos = len(partial_dos)
 
     if indices is None:
-        indices = []
-        for i in range(num_pdos):
-            indices.append([i])
+        indices = list(np.arange(num_pdos))
+
+    if pdos_colors:
+        pdos_colors.reverse()
+    else:
+        pdos_colors = [None]*len(indices)
+
+    # if total_dos_bool:
+        # total_dos = 0
+    pdos_ind = 0
+
+    if total_dos_bool:
+        plots.append(ax.plot(np.sum(partial_dos, axis=0), frequency_points, c='k'))
 
     for set_for_sum in indices:
         pdos_sum = np.zeros_like(frequency_points)
@@ -144,20 +153,50 @@ def plot_partial_dos(ax,
                 raise ValueError
             pdos_sum += partial_dos[i]
         if flip_xy:
-            plots.append(ax.plot(pdos_sum, frequency_points, linewidth=1))
+            plots.append(ax.plot(pdos_sum, frequency_points, label=legend[pdos_ind], linewidth=2, c=pdos_colors.pop()))
         else:
-            plots.append(ax.plot(frequency_points, pdos_sum, linewidth=1))
+            plots.append(ax.plot(frequency_points, pdos_sum, label=legend[pdos_ind], linewidth=2, c=pdos_colors.pop()))
+        pdos_ind += 1
 
-    if legend is not None:
-        ax.legend(legend)
+    ax.legend(fontsize='xx-large')
+    if np.sum(legend==None) == len(indices):
+        ax.legend().remove()
 
     if xlabel:
         ax.set_xlabel(xlabel)
     if ylabel:
         ax.set_ylabel(ylabel)
 
+    ax.axvline(0, c='k', linewidth=2.0, zorder=3)
+    ax.axhline(0, c='k', linewidth=2.0, alpha=0.3, zorder=3)
     ax.grid(draw_grid)
 
+def get_pdos(
+    ax,
+    partial_dos,
+    indices=None,
+    ):
+    natoms = len(partial_dos)
+
+    if indices is None:
+        indices = list(np.arange(natoms))
+
+    pdos_list = []
+    for set_for_sum in indices:
+        pdos_sum = 0
+        for i in set_for_sum:
+            if i > natoms - 1:
+                print("Index number \'%d\' is specified," % (i + 1))
+                print("but it is not allowed to be larger than the number of "
+                      "atoms.")
+                raise ValueError
+            if i < 0:
+                print("Index number \'%d\' is specified, but it must be "
+                      "positive." % (i + 1))
+                raise ValueError
+            pdos_sum += partial_dos[i]
+        pdos_list.append(pdos_sum)
+    return pdos_list
 
 class NormalDistribution(object):
     def __init__(self, sigma):
@@ -196,7 +235,7 @@ def run_tetrahedron_method_dos(mesh,
     else:
         _coef = np.array(coef, dtype='double', order='C')
     arr_shape = frequencies.shape + (len(frequency_points), _coef.shape[1])
-    dos = np.zeros(arr_shape, dtype='double')
+    dos = np.zeros(arr_shape, dtype=np.float64)
 
     phonoc.tetrahedron_method_dos(dos,
                                   mesh,
@@ -449,6 +488,7 @@ class PartialDos(Dos):
         if self._tetrahedron_mesh is None:
             self._run_smearing_method()
         else:
+            # disable openmp_thm if memory issue appears
             if self._openmp_thm:
                 self._run_tetrahedron_method_dos()
             else:
@@ -464,7 +504,9 @@ class PartialDos(Dos):
     def plot(self,
              ax,
              indices=None,
+             pdos_colors=None,
              legend=None,
+             total_dos_bool=True,
              xlabel=None,
              ylabel=None,
              draw_grid=True,
@@ -485,7 +527,9 @@ class PartialDos(Dos):
         plot_partial_dos(ax,
                          self._frequency_points,
                          self._partial_dos,
+                         total_dos_bool,
                          indices=indices,
+                         pdos_colors=pdos_colors,
                          legend=legend,
                          xlabel=_xlabel,
                          ylabel=_ylabel,

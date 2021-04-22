@@ -2078,7 +2078,7 @@ class Phonopy(object):
         return self.plot_projected_dos(pdos_indices=pdos_indices,
                                        legend=legend)
 
-    def plot_projected_dos(self, pdos_indices=None, legend=None):
+    def plot_projected_dos(self, pdos_indices=None, pdos_colors=None, legend=None, total_dos_bool=True, flip_xy=True):
         """Plot projected DOS
 
         Parameters
@@ -2097,21 +2097,24 @@ class Phonopy(object):
         """
 
         import matplotlib.pyplot as plt
+        font = {'family':'Arial'}
+        plt.rc('font', **font)
 
         fig, ax = plt.subplots()
-        ax.xaxis.set_ticks_position('both')
-        ax.yaxis.set_ticks_position('both')
-        ax.xaxis.set_tick_params(which='both', direction='in')
-        ax.yaxis.set_tick_params(which='both', direction='in')
+        ax.tick_params(axis="both",direction="in", labelsize='x-large')
 
         self._pdos.plot(ax,
                         indices=pdos_indices,
+                        pdos_colors=pdos_colors,
                         legend=legend,
-                        draw_grid=False)
+                        total_dos_bool=total_dos_bool,
+                        draw_grid=False,
+                        flip_xy=flip_xy,
+                        )
 
-        ax.set_ylim((0, None))
+        ax.set_ylim((None, None))
 
-        return plt
+        return plt, ax
 
     def write_partial_DOS(self, filename="partial_dos.dat"):
         warnings.warn("Phonopy.write_partial_DOS is deprecated. "

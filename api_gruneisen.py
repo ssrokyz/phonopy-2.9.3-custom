@@ -138,7 +138,9 @@ class PhonopyGruneisen(object):
 
     def plot_band_structure(self,
                             epsilon=1e-4,
-                            color_scheme=None):
+                            color_scheme=None,
+                            labels=None,
+                            ):
         import matplotlib.pyplot as plt
         fig, axarr = plt.subplots(2, 1)
         for ax in axarr:
@@ -148,7 +150,9 @@ class PhonopyGruneisen(object):
             ax.yaxis.set_tick_params(which='both', direction='in')
             self._band_structure.plot(axarr,
                                       epsilon=epsilon,
-                                      color_scheme=color_scheme)
+                                      color_scheme=color_scheme,
+                                      labels=labels,
+                                      )
         return plt
 
     def set_thermal_properties(self,

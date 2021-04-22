@@ -65,9 +65,8 @@ class GruneisenBandStructure(GruneisenBase):
             qpoints = np.array(qpoints_)
             distances = np.zeros(len(qpoints))
             delta_qpoints = qpoints[1:] - qpoints[:-1]
-            delta_distances = np.sqrt(
-                (np.dot(delta_qpoints, rec_lattice) ** 2).sum(axis=1))
-            for i, dd in enumerate(delta_distances):
+            for i, dq in enumerate(delta_qpoints):
+                dd = np.linalg.norm(np.dot(rec_lattice, dq))
                 distances[i + 1] = distances[i] + dd
 
             self.set_qpoints(qpoints)
@@ -257,11 +256,17 @@ class GruneisenBandStructure(GruneisenBase):
             self._plot_a_band(ax1, curve, distances_with_shift, i, n,
                               color_scheme)
         ax1.set_xlim(0, distances_with_shift[-1])
+        ax1.grid(alpha=0.5)
+        ax1.tick_params(axis="both",direction="in", labelsize='x-large')
+        ax1.set_ylabel('Gruneisen', fontsize='x-large')
 
         for i, freqs in enumerate(frequencies.T):
             self._plot_a_band(ax2, freqs, distances_with_shift, i, n,
                               color_scheme)
         ax2.set_xlim(0, distances_with_shift[-1])
+        ax2.grid(alpha=0.5)
+        ax2.tick_params(axis="both",direction="in", labelsize='x-large')
+        ax2.set_ylabel('Frequency (THz)', fontsize='x-large')
 
     def _plot_a_band(self, ax, curve, distances_with_shift, i, n, color_scheme):
         color = None
