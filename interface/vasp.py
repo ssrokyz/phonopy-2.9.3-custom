@@ -289,11 +289,12 @@ def write_vasp(filename, cell, direct=True):
 
 def write_supercells_with_displacements(supercell,
                                         cells_with_displacements,
-                                        ids,
                                         pre_filename="POSCAR",
                                         width=3):
     write_vasp("S%s" % pre_filename, supercell, direct=True)
-    for i, cell in zip(ids, cells_with_displacements):
+    i=0
+    for cell in cells_with_displacements:
+        i+=1
         filename = "{pre_filename}-{0:0{width}}".format(
             i, pre_filename=pre_filename, width=width)
         write_vasp(filename, cell, direct=True)
