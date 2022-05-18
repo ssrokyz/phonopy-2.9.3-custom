@@ -179,7 +179,7 @@ def get_pdos(
     natoms = len(partial_dos)
 
     if indices is None:
-        indices = list(np.arange(natoms))
+        indices = [np.arange(natoms)]
 
     pdos_list = []
     for set_for_sum in indices:
