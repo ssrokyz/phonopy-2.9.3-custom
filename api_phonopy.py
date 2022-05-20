@@ -115,6 +115,7 @@ class Phonopy(object):
                                               dtype='double', order='c')
         else:
             self._primitive_matrix = None
+        np.save('primitive_matrix.npy', self._primitive_matrix)
         self._supercell = None
         self._primitive = None
         self._build_supercell()
